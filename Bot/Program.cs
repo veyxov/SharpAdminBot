@@ -2,20 +2,18 @@
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Serilog;
 
 class Program {
     static TelegramBotClient bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TOKEN")!);
-    static void Main() {
-        var receiverOptions = new ReceiverOptions()
-        {
-            AllowedUpdates = new UpdateType[]
-            {
-                UpdateType.Message,
-                UpdateType.EditedMessage
-            }
-        };
 
-        bot.StartReceiving(UpdateHandler, ErrorHandler, receiverOptions);
+    static void Main() {
+        ConfigurationExtensions.ConfigureLogging();
+
+        bot.StartReceiving(UpdateHandler, ErrorHandler, new ReceiverOptions()
+        {
+            AllowedUpdates = Array.Empty<UpdateType>()
+        });
 
         Console.ReadKey();
     }
@@ -27,6 +25,8 @@ class Program {
 
     static async Task UpdateHandler(ITelegramBotClient arg1, Update update, CancellationToken arg3)
     {
+        Log.Warning("{@arst}", update);
+
         if (update.Type == UpdateType.Message)
         {
             var text = update?.Message?.Text;
