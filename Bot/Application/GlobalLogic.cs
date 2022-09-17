@@ -7,7 +7,7 @@ public static class GlobalLogic
     {
         Log.Warning("{@arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions() {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true}));
 
-        
+
 }
 
     public static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken cancellationToken)
