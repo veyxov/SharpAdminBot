@@ -7,8 +7,19 @@ public static class GlobalLogic
     {
         Log.Warning("{@arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions() {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, WriteIndented = true}));
 
-
-}
+        if (update.Type == UpdateType.Message)
+        {
+            // If it is a reply
+            if (update.Message!.ReplyToMessage is not null)
+            {
+                if (update.Message!.Text == "/report")
+                {
+                    Log.Warning("Passing to report handler.");
+                    await Components.ReportHandler(arg1, update, arg3);
+                }
+            }
+        }
+    }
 
     public static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken cancellationToken)
     {
