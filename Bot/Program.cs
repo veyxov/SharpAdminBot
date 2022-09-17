@@ -18,9 +18,12 @@ class Program {
         Console.ReadKey();
     }
 
-    static Task ErrorHandler(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
+    static Task ErrorHandler(ITelegramBotClient client, Exception exception, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        // TODO: Handle errors
+        Log.Fatal("An exception occurred {@exception}", exception);
+
+        return Task.CompletedTask;
     }
 
     static async Task UpdateHandler(ITelegramBotClient arg1, Update update, CancellationToken arg3)
