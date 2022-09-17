@@ -1,4 +1,6 @@
-public class DbContext : DbContext
+using Microsoft.EntityFrameworkCore;
+
+public class Context : DbContext
 {
-    
+
 }
