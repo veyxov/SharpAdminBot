@@ -1,8 +1,5 @@
-﻿using Telegram.Bot;
-using Telegram.Bot.Extensions.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
-using Serilog;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 class Program {
     static TelegramBotClient bot = new TelegramBotClient(Environment.GetEnvironmentVariable("TOKEN")!);
@@ -10,10 +7,7 @@ class Program {
     static void Main() {
         ConfigurationExtensions.ConfigureLogging();
 
-        bot.StartReceiving(UpdateHandler, ErrorHandler, new ReceiverOptions()
-        {
-            AllowedUpdates = Array.Empty<UpdateType>()
-        });
+        bot.StartReceiving(UpdateHandler, ErrorHandler, new ReceiverOptions() { AllowedUpdates = Array.Empty<UpdateType>() });
 
         Console.ReadKey();
     }
@@ -23,12 +17,12 @@ class Program {
         // TODO: Handle errors
         Log.Fatal("An exception occurred {@exception}", exception);
 
-        return Task.CompletedTask;
+        throw new Exception(exception.Message);
     }
 
     static async Task UpdateHandler(ITelegramBotClient arg1, Update update, CancellationToken arg3)
     {
-        Log.Warning("{@arst}", update);
+        Log.Warning("{@arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions() {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull}));
 
         if (update.Type == UpdateType.Message)
         {
