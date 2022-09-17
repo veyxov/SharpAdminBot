@@ -1,5 +1,3 @@
-using Serilog;
-
 public static class ConfigurationExtensions
 {
     public static void ConfigureLogging()
