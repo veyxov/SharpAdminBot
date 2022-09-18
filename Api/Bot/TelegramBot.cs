@@ -35,9 +35,7 @@ public class TelegramBot
 
         async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            Log.Warning("@{arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions(){ WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull}));
-            Log.Fatal("\n");
-
+            Log.Error("{@arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions() {DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull}));
             if (update.Message is not null)
             {
                 if (update.Message.ReplyToMessage is not null)
@@ -45,7 +43,7 @@ public class TelegramBot
                     if (update.Message.Text! == "-")
                     {
                         var reportedMessageId = update.Message.ReplyToMessage.MessageId;
-                        var reporterId = update.Message.ReplyToMessage.From!.Id;
+                        var reporterId = update.Message.From!.Id;
                         var reportMessageId = update.Message.MessageId;
 
                         await _context.Reports.AddAsync(new Report()
@@ -57,18 +55,27 @@ public class TelegramBot
                         });
                         await _context.SaveChangesAsync();
 
-                        var query = _context.Reports.Where(x => x.MessageId == reportedMessageId);
-                        var reports = await query.ToListAsync();
+                        var query = _context.Reports.Where(x => x.MessageId == reportedMessageId).AsEnumerable().DistinctBy(x => x.ReporterId);
+                        var reports = query.ToList();
                         var reportsCount = reports.Count;
 
                         Log.Error("{@asrt}", reports);
 
-                        if (reportsCount >= 3)
+                        if (reportsCount >= 2)
                         {
-                            foreach (var report in reports)
+                            try
                             {
-                                await botClient.DeleteMessageAsync(messageId: (int)report.MessageId, chatId: report.ChatId);
-                                await botClient.DeleteMessageAsync(messageId: (int)report.ReportMessageId, chatId: report.ChatId);
+                                    await botClient.DeleteMessageAsync(messageId: (int)reportedMessageId,
+                                        chatId: update.Message.Chat.Id);
+                                foreach (var report in reports)
+                                {
+                                    await botClient.DeleteMessageAsync(messageId: (int)report.ReportMessageId,
+                                        chatId: report.ChatId);
+                                }
+                            }
+                            catch
+                            {
+                                Log.Error("erro");
                             }
                         }
                     }
