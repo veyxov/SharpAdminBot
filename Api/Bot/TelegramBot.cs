@@ -35,7 +35,7 @@ public class TelegramBot
 
         async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // Log.Warning("@{arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions(){ WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull}));
+            Log.Warning("@{arst}", JsonSerializer.Serialize(update, new JsonSerializerOptions(){ WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull}));
             Log.Fatal("\n");
 
             if (update.Message is not null)
@@ -50,10 +50,12 @@ public class TelegramBot
 
                         await _context.Reports.AddAsync(new Report()
                         {
+                            ChatId = update.Message.Chat.Id,
                             MessageId = reportedMessageId,
                             ReporterId = reporterId,
                             ReportMessageId = reportMessageId
                         });
+                        await _context.SaveChangesAsync();
 
                         var query = _context.Reports.Where(x => x.MessageId == reportedMessageId);
                         var reports = await query.ToListAsync();
@@ -61,9 +63,13 @@ public class TelegramBot
 
                         Log.Error("{@asrt}", reports);
 
-                        if (reportsCount > 3)
+                        if (reportsCount >= 3)
                         {
-                            Log.Fatal("Need to delete !");
+                            foreach (var report in reports)
+                            {
+                                await botClient.DeleteMessageAsync(messageId: (int)report.MessageId, chatId: report.ChatId);
+                                await botClient.DeleteMessageAsync(messageId: (int)report.ReportMessageId, chatId: report.ChatId);
+                            }
                         }
                     }
                 }
