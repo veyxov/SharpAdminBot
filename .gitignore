@@ -475,3 +475,6 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+.idea/.idea.SharpAdmin/.idea
+Api/app.db

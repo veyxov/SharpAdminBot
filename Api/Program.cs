@@ -1,7 +1,5 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
-using Telegram.Bot;
 
 internal class Program
 {
@@ -15,6 +13,8 @@ internal class Program
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddDbContext<Context>(o => o.UseSqlite("DataSource=app.db"));
 
         var app = builder.Build();
 
@@ -30,12 +30,13 @@ internal class Program
 
         app.MapControllers();
 
+
         Log.Logger = new LoggerConfiguration()
                     .MinimumLevel.Information()
                     .WriteTo.Console()
                     .CreateLogger();
 
-        await new TelegramBot().StartBotAsync();
+        await new TelegramBot(new Context(new DbContextOptionsBuilder().UseSqlite("DataSource=app.db").Options)).StartBotAsync();
 
         app.Run();
     }
